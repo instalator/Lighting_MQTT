@@ -7,8 +7,6 @@
 
 Adafruit_MCP23017 mcp;
 
-#define ledPin = 43
-
 #define MCP_INTA 19
 #define MCP_INTB 18
 #define IN_UP1 56 //A2
@@ -43,8 +41,6 @@ Adafruit_MCP23017 mcp;
 #define IN_DW6 47
 #define IN_DW7 49
 #define IN_DW8 43
-
-
 
 uint16_t mcp_oldstate = 0;
 byte btn[15];
@@ -94,6 +90,7 @@ void setup() {
     mcp.pinMode(i, INPUT);
     mcp.setupInterruptPin(i, FALLING);
   }
+  analogWrite(PWM_1, 255);
   Ethernet.begin(mac, ip);
 }
 
