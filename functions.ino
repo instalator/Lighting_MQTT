@@ -7,8 +7,14 @@ void callback_iobroker(String strTopic, String strPayload) {
   }
   //////////////////////////
   else if (strTopic == "myhome/Lighting2/PWM1") {
-      analogWrite(PWM_1, 256-strPayload.toInt());
-      client.publish("myhome/Lighting2/PWM1", IntToChar(strPayload.toInt()));
+      int pwm = PWM(strPayload);
+      analogWrite(PWM_1, pwm);
+      client.publish("myhome/Lighting2/PWM1", IntToChar(255 - pwm));
+  }
+  //////////////////////////
+  else if (strTopic == "myhome/Lighting2/RGB") {
+      Serial.println(strPayload);
+      client.publish("myhome/Lighting2/RGB", ToChar(strPayload));
   }
   /* else if (strTopic == "myhome/Lighting2/Lock") {
       if (strPayload == "1") {
@@ -21,11 +27,34 @@ void callback_iobroker(String strTopic, String strPayload) {
       client.publish("myhome/Lighting/Lock", ToChar(strPayload));
     }*/
 }
+
+void RGB_Switch(int i, int color){
+  Serial.print(i);
+  Serial.println(color);
+}
+
 void Switch(int i){
    if (i == 0) { // Спальня 1
       InvertOut(out[i]);
       client.publish("myhome/Lighting2/BedRoom_Main", IntToBool(state_out));
    }
+}
+
+bool InvertOut(int pin){
+    //delay(10);
+    digitalWrite(pin, !digitalRead(pin)); //инвертируем состояние пина
+    state_out = digitalRead(pin);
+    return state_out;
+}
+
+int PWM(String p){
+  int pwm = p.toInt();
+    if (pwm > 255){
+      pwm = 255;
+    } else if (pwm < 0){
+      pwm = 0;
+    }
+    return (255 - pwm);
 }
 
 void ReadButton (){
@@ -53,12 +82,7 @@ bool SrtToLvl(String st){
       return LOW;
     }
 }
-bool InvertOut(int pin){
-    //delay(10);
-    digitalWrite(pin, !digitalRead(pin)); //инвертируем состояние пина
-    state_out = digitalRead(pin);
-    return state_out;
-}
+
 char* ToChar (String intstr){
     char b[2];
     intstr.toCharArray(b, 2);
