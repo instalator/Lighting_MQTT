@@ -1,11 +1,11 @@
-
 #include <SPI.h>           // Ethernet shield
 #include <Ethernet.h>      // Ethernet shield
 #include <PubSubClient.h>  // MQTT 
 #include <Wire.h>
 #include <Adafruit_MCP23017.h>
+//#include <EEPROM.h>
+
 //C:\Users\instalator\AppData\Local\Temp
-Adafruit_MCP23017 mcp;
 
 #define MCP_INTA 19
 #define MCP_INTB 18
@@ -42,11 +42,15 @@ Adafruit_MCP23017 mcp;
 #define IN_DW7 49
 #define IN_DW8 43
 
+Adafruit_MCP23017 mcp;
 uint16_t mcp_oldstate = 0;
 byte btn[16];
 byte btn_old[16];
 bool lock = false;
 long prevMillis = 0;
+long prevMillis2 = 0;
+int bathswitch = 0;
+int posetitel = 0;
 
 byte mac[]    = { 0x0C, 0x8E, 0xC0, 0x42, 0x19, 0x42 };
 byte server[] = { 192, 168, 1, 190 }; //IP Брокера
@@ -84,9 +88,11 @@ void setup() {
   DDRG |= 0b00000111;
   DDRL |= 0b10000000;
   DDRD |= 0b00001100;
+  pinMode(IN_UP7, INPUT);
+  pinMode(IN_UP8, INPUT);
   
-  pinMode(43, OUTPUT);
-  
+
+  Serial.begin(115200);
   Serial2.begin(19200);
   mcp.begin();
   delay(10);
@@ -117,8 +123,8 @@ void loop() {
 }
 
 void PubTopic (){
-    client.publish("myhome/lighting2/All_OFF", "false");
     client.publish("myhome/Bathroom/Ventilator", "false");
+    client.publish("myhome/lighting2/All_OFF", "false");
     client.publish("myhome/lighting2/BedRoom_main", "false");
     client.publish("myhome/lighting2/BedRoom_sec", "false");
     client.publish("myhome/lighting2/GuestRoom_main", "false");
