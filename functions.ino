@@ -162,17 +162,23 @@ void callback_iobroker(String strTopic, String strPayload) {
       analogWrite(PWM_1, 255 - R);
       analogWrite(PWM_2, 255 - G);
       analogWrite(PWM_3, 255 - B);
-      client.publish("myhome/lighting2/RGB_1", ToChar(strPayload));
+      client.publish("myhome/lighting2/PWM_1", IntToChar(R));
+      client.publish("myhome/lighting2/PWM_2", IntToChar(G));
+      client.publish("myhome/lighting2/PWM_3", IntToChar(B));
+      client.publish("myhome/lighting2/RGB_1", RGBToChar(strPayload));
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting2/RGB_2") {
-       int R = strPayload.substring(1,strPayload.indexOf('G')).toInt();
+      int R = strPayload.substring(1,strPayload.indexOf('G')).toInt();
       int G = strPayload.substring(strPayload.indexOf('G')+1, strPayload.lastIndexOf('B')).toInt();
       int B = strPayload.substring(strPayload.lastIndexOf('B')+1).toInt();
       analogWrite(PWM_4, 255 - R);
       analogWrite(PWM_5, 255 - G);
       analogWrite(PWM_6, 255 - B);
-      client.publish("myhome/lighting2/RGB_2", ToChar(strPayload));
+      client.publish("myhome/lighting2/PWM_4", IntToChar(R));
+      client.publish("myhome/lighting2/PWM_5", IntToChar(G));
+      client.publish("myhome/lighting2/PWM_6", IntToChar(B));
+      client.publish("myhome/lighting2/RGB_2", RGBToChar(strPayload));
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting2/RGB_3") {
@@ -182,19 +188,23 @@ void callback_iobroker(String strTopic, String strPayload) {
       analogWrite(PWM_7, 255 - R);
       analogWrite(PWM_8, 255 - G);
       analogWrite(PWM_9, 255 - B);
-      client.publish("myhome/lighting2/RGB_3", ToChar(strPayload));
+      client.publish("myhome/lighting2/PWM_7", IntToChar(R));
+      client.publish("myhome/lighting2/PWM_8", IntToChar(G));
+      client.publish("myhome/lighting2/PWM_9", IntToChar(B));
+      client.publish("myhome/lighting2/RGB_3", RGBToChar(strPayload));
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting2/Switch_RGB") {
-      /*int num = strPayload.substring(0,strPayload.indexOf('R')).toInt();
-      int R = strPayload.substring(strPayload.indexOf('R')+1, strPayload.lastIndexOf('G')).toInt();
-      int G = strPayload.substring(strPayload.indexOf('G')+1, strPayload.lastIndexOf('B')).toInt();
-      int B = strPayload.substring(strPayload.lastIndexOf('B')+1).toInt();
-      */
-      Serial.println(strPayload);
+      Serial2.println(strPayload);
   }
 }
-
+char* RGBToChar (String str){
+    int len = str.length()+1;
+    char a[len+25];
+    str.toCharArray(a, len+1);
+    return a;
+}
+ 
 char* IntToCh (int intV) {
   String str = String(intV, DEC);
   int len = str.length() + 1;
@@ -203,71 +213,81 @@ char* IntToCh (int intV) {
   return b;
 }
 
+char* IntToChar (int intV) {
+  String stringVar = String(intV, DEC);
+  int len = stringVar.length() + 1;
+  char b[len+1];
+  stringVar.toCharArray(b, len);
+  return b;
+}
+
 void Switch(int i){
   switch (i){
     case 0:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BedRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BedRoom_main", state_out);
       break;
     case 1:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 2:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 3:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 4:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 5:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 6:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 7:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 8:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 9:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 10:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 11:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 12:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 13:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 14:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
       break;
     case 15:
         InvertOut(out[i]);
-        client.publish("myhome/lighting2/BathRoom_main", IntToBool(state_out));
+        client.publish("myhome/lighting2/BathRoom_main", state_out);
+        posetitel = digitalRead(out[i]);
+        bathswitch = posetitel;
       break;
     //default:
     
@@ -277,7 +297,12 @@ void Switch(int i){
 bool InvertOut(int pin){
     //delay(10);
     digitalWrite(pin, !digitalRead(pin)); //инвертируем состояние пина
-    state_out = digitalRead(pin);
+    bool state = digitalRead(pin);
+    if (state > 0){
+      state_out = "false";
+    } else{
+      state_out = "true";
+    }
     return state_out;
 }
 
@@ -288,7 +313,8 @@ int PWM(String p){
     } else if (pwm < 0){
       pwm = 0;
     }
-    return (255 - pwm);
+    pwm = 255 - pwm;
+    return pwm;
 }
 
 void ReadButton (){
@@ -297,9 +323,41 @@ void ReadButton (){
     if (btn[i] != btn_old[i]){
       btn_old[i] = btn[i];
       Switch(i);
-      //client.publish(topic[i],  IntToChar(btn[i]));
     }
   }
+  Bath();
+}
+
+void Bath(){
+  //////////// Ванная //////////
+    if (digitalRead(IN_UP7) == 1 && (millis() - prevMillis2 > 3000)) { //Если кто то зашел в ванную то
+      prevMillis2 = millis();
+      if (bathswitch == 1) {
+        posetitel = 0;
+        bathswitch = 0;
+      }
+      posetitel++;
+      if (posetitel > 0) {
+        //delay(50);
+        digitalWrite(out[15], 1);//Включаем свет
+        if (posetitel > 5) {
+          posetitel = 5;
+        }
+        //delay(5);
+        client.publish("myhome/lighting2/BathRoom_main", "true");
+      }
+    }
+    if (digitalRead(IN_UP8) == 1 && (millis() - prevMillis2 > 3000) && lock == false) { //Если кто то вышел из ванной то
+      prevMillis2 = millis();
+      posetitel--;
+      if (posetitel <= 0) {
+        posetitel = 0;
+        //delay(50);
+        digitalWrite(out[15], 0);//Выключаем свет
+        //delay(5);
+        client.publish("myhome/lighting2/BathRoom_main", "false");
+      }
+    }
 }
 
 char* pub(String st){
@@ -317,24 +375,8 @@ bool SrtToLvl(String st){
     }
 }
 
-char* ToChar (String str){
-    int len = str.length() + 1;
-    char b[len+2];
-    str.toCharArray(b, len);
-    return b;
-  }
-  
-char* IntToChar (int intV) {
-  char b[2];
-  String stringVar = String(intV, DEC);
-  stringVar.toCharArray(b, 4);
-  return b;
-}
 
-char* IntToBool (int r) {
-    if (r > 0){
-      return "false";
-    } else{
-      return "true";
-    }
-}
+  
+
+
+
