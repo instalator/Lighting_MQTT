@@ -43,9 +43,10 @@ Adafruit_MCP23017 mcp;
 #define IN_DW8 43
 
 uint16_t mcp_oldstate = 0;
-byte btn[15];
-byte btn_old[15];
+byte btn[16];
+byte btn_old[16];
 bool lock = false;
+long prevMillis = 0;
 
 byte mac[]    = { 0x0C, 0x8E, 0xC0, 0x42, 0x19, 0x42 };
 byte server[] = { 192, 168, 1, 190 }; //IP Брокера
@@ -63,21 +64,19 @@ PubSubClient client(server, 1883, callback, ethClient);
 #define ID_CONNECT "lighting2"
 #define PREF "myhome/lighting2/"
 
-bool state_out;
-byte out[] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42}; //22
-byte bt[] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
+char *state_out = "false";
+byte out[21] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42};
+byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
 
 void reconnect() {
-  while (!client.connected()) {
+  //while (!client.connected()) {
     if (client.connect(ID_CONNECT)) {
       client.publish("myhome/lighting2/connection", "true");
       PubTopic();
       client.subscribe("myhome/lighting2/#");
       client.subscribe("myhome/Bathroom/#");
-    } else {
-        delay(5000);  //TODO
     }
-  }
+  //}
 }
 void setup() {
   DDRA = 0xFF;
@@ -90,6 +89,7 @@ void setup() {
   
   Serial2.begin(19200);
   mcp.begin();
+  delay(10);
   //mcp.setupInterrupts(true, false, LOW);
   for(int i = 0; i <= 15; i++){
     mcp.pinMode(i, INPUT);
@@ -97,19 +97,23 @@ void setup() {
   }
   analogWrite(PWM_1, 255);
   Ethernet.begin(mac, ip);
+  delay(10);
 }
 
 void loop() { 
-  if (client.connected()){
+   if (!client.connected()){ 
+     if (millis() - prevMillis > 10000){
+        prevMillis = millis();
+        reconnect();
+     }
+   } else {
+      client.loop();
+   }
     if (Serial2.available() > 0) {
       int inByte = Serial2.read();
       client.publish("myhome/lighting2/UART", inByte);
     }
-    client.loop();
     ReadButton();
-  } else {
-    reconnect();
-  }
 }
 
 void PubTopic (){
@@ -127,17 +131,17 @@ void PubTopic (){
     client.publish("myhome/lighting2/Hall_main", "false");
     client.publish("myhome/lighting2/Cupboard", "false");
     client.publish("myhome/lighting2/Lock", "false");
-    client.publish("myhome/lighting2/Switch_RGB", "false");
-    client.publish("myhome/lighting2/RGB_1", "false");
-    client.publish("myhome/lighting2/RGB_2", "false");
-    client.publish("myhome/lighting2/RGB_3", "false");
-    client.publish("myhome/lighting2/PWM_1", "false");
-    client.publish("myhome/lighting2/PWM_2", "false");
-    client.publish("myhome/lighting2/PWM_3", "false");
-    client.publish("myhome/lighting2/PWM_4", "false");
-    client.publish("myhome/lighting2/PWM_5", "false");
-    client.publish("myhome/lighting2/PWM_6", "false");
-    client.publish("myhome/lighting2/PWM_7", "false");
-    client.publish("myhome/lighting2/PWM_8", "false");
-    client.publish("myhome/lighting2/PWM_9", "false");
+    client.publish("myhome/lighting2/Switch_RGB", "99R0G0B0");
+    client.publish("myhome/lighting2/RGB_1", "R0G0B0");
+    client.publish("myhome/lighting2/RGB_2", "R0G0B0");
+    client.publish("myhome/lighting2/RGB_3", "R0G0B0");
+    client.publish("myhome/lighting2/PWM_1", "0");
+    client.publish("myhome/lighting2/PWM_2", "0");
+    client.publish("myhome/lighting2/PWM_3", "0");
+    client.publish("myhome/lighting2/PWM_4", "0");
+    client.publish("myhome/lighting2/PWM_5", "0");
+    client.publish("myhome/lighting2/PWM_6", "0");
+    client.publish("myhome/lighting2/PWM_7", "0");
+    client.publish("myhome/lighting2/PWM_8", "0");
+    client.publish("myhome/lighting2/PWM_9", "0");
   }
