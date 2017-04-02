@@ -80,6 +80,7 @@ bool flag_cupboard = false;
 int i_cup = 255;
 bool cupboard = false;
 bool All_OFF = false;
+String inputString = "";
 
 byte mac[]    = { 0x0C, 0x8E, 0xC0, 0x42, 0x19, 0x42 };
 byte server[] = { 192, 168, 1, 190 }; //IP Брокера
@@ -149,8 +150,16 @@ void setup() {
 void loop() { 
    client.loop();
     if (Serial2.available() > 0) {
-      int inByte = Serial2.read();
-      client.publish("myhome/lighting2/UART2", inByte);
+      char inChar = (char)Serial2.read(); 
+      inputString += inChar;
+      if (inChar == '\n') {
+        inputString.replace(" ", "");
+        char charVar[20];
+        inputString.toCharArray(charVar, 20);
+        client.publish("myhome/lighting2/UART2", charVar);
+        inputString = "";
+        //stringComplete = true;
+      } 
     }
     ReadButton();
     Bath();
