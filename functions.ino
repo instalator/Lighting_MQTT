@@ -194,7 +194,8 @@ void callback_iobroker(String strTopic, String strPayload) {
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting2/Switch_RGB") {
-      Serial2.println(strPayload);
+      Serial2.print(strPayload);
+      Serial2.print('\r');
   }
 }
 
