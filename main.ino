@@ -72,11 +72,12 @@ bool lock = false;
 long prevMillis = 0; //для reconnect
 long prevMillis2 = 0; // для ванной
 long prevMillis3 = 0; //для подсветки шкафа
+long prevMillis4 = 0; // для теста подсветки шкафа
 int bathswitch = 0; 
 int posetitel = 0; 
 int left = 0;
 int right = 0;
-bool flag_cupboard = false;
+bool flag_cupboard = true;
 int i_cup = 255;
 bool cupboard = false;
 bool All_OFF = false;
@@ -84,7 +85,7 @@ String inputString = "";
 
 byte mac[]    = { 0x0C, 0x8E, 0xC0, 0x42, 0x19, 0x42 };
 byte server[] = { 192, 168, 1, 190 }; //IP Брокера
-byte ip[]     = { 192, 168, 1, 63 }; //IP Клиента (Arduino)
+byte ip[]     = { 192, 168, 1, 67 }; //IP Клиента (Arduino)
 
 void callback(char* topic, byte* payload, unsigned int length) {
     payload[length] = '\0';
@@ -122,6 +123,11 @@ void setup() {
   pinMode(IN_UP8, INPUT);
   pinMode(IR_1, INPUT);
   pinMode(IR_2, INPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
+  digitalWrite(10, HIGH);
+  digitalWrite(11, HIGH);
+  analogWrite(PWM_1, 255);/// Выключаем счет в шкафу
   
   analogWrite(PWM_1, 255);
   analogWrite(PWM_2, 255);
