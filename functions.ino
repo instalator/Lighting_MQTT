@@ -76,15 +76,15 @@ void callback_iobroker(String strTopic, String strPayload) {
   }
 /////////////////////
   else if (strTopic == "myhome/Bathroom/Ventilator") {
-      digitalWrite(out[21], SrtToLvl(strPayload));
+      digitalWrite(out[20], SrtToLvl(strPayload));
       //delay(pause);
       client.publish("myhome/Bathroom/Ventilator", pub(strPayload));
    }
 ///////////////////
   else if (strTopic == "myhome/lighting/All_OFF") {
     if (strPayload == "true") {
-      for (int i = 0 ; i <= 21; i++) {
-        if (out[i] != 21){ //myhome/Bathroom/Ventilator
+      for (int i = 0 ; i < 21; i++) {
+        if (out[i] != 20){ //myhome/Bathroom/Ventilator
            digitalWrite (out[i], LOW);
         }
       }
@@ -230,11 +230,18 @@ void callback_iobroker(String strTopic, String strPayload) {
 void IRsens(){
   left = analogRead(IR_1);
   right = analogRead(IR_2);
-  if ((left < 10 || right < 10) && flag_cupboard == false && cupboard == false){
+  if (millis() - prevMillis4 > 5000){
+    prevMillis4 = millis();
+    client.publish("myhome/lighting/left_IR", IntToCh(left));
+    client.publish("myhome/lighting/right_IR", IntToCh(right));
+  }
+  if ((left < 320 || right < 300) && left > 10 && right > 10 && flag_cupboard == false && cupboard == false){
     flag_cupboard = true;
-  } else if (left > 100 && right > 100){
+  } else if ((left > 380 && right > 350) || (left < 10 && right < 10)){
     analogWrite(PWM_1, 255);
-    client.publish("myhome/lighting/Cupboard", "false");
+    if (cupboard == true){
+      client.publish("myhome/lighting/Cupboard", "false");
+    }
     i_cup = 255;
     flag_cupboard = false;
     cupboard = false;
