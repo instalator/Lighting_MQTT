@@ -1,8 +1,9 @@
 #include <SPI.h>           // Ethernet shield
 #include <Ethernet.h>      // Ethernet shield
 #include <PubSubClient.h>  // MQTT 
-#include <Wire.h>
+//#include <Wire.h>
 #include <Adafruit_MCP23017.h>
+#include <avr/wdt.h>
 //#include <EEPROM.h>
     
 //C:\Users\instalator\AppData\Local\Temp
@@ -52,8 +53,8 @@
 
 #define IR_1 55 //A1
 #define IR_2 54 //A0
-#define LED_1 10
-#define LED_2 11
+#define LED_1 10 //* транзисторный выход 100 mA
+#define LED_2 11 //* транзисторный выход 100 mA
 
 #define IN_DW1 21 //SCL
 #define IN_DW2 20 //SDA
@@ -67,14 +68,15 @@
 Adafruit_MCP23017 mcp;
 uint16_t mcp_oldstate = 0;
 byte btn[16];
-byte btn_old[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+byte btn_old[16];
 bool lock = false; 
+bool FirstStart = true;
 long prevMillis = 0; //для reconnect
 long prevMillis2 = 0; // для ванной
 long prevMillis3 = 0; //для подсветки шкафа
 long prevMillis4 = 0; // для теста подсветки шкафа
 int bathswitch = 0; 
-int posetitel = 0; 
+int posetitel = 0;
 int left = 0;
 int right = 0;
 bool flag_cupboard = true;
@@ -83,7 +85,7 @@ bool cupboard = false;
 bool All_OFF = false;
 String inputString = "";
 
-byte mac[]    = { 0x0C, 0x8E, 0xC0, 0x42, 0x19, 0x42 };
+byte mac[]    = { 0x0C, 0x8E, 0xC2, 0x42, 0x12, 0x44 };
 byte server[] = { 192, 168, 1, 190 }; //IP Брокера
 byte ip[]     = { 192, 168, 1, 67 }; //IP Клиента (Arduino)
 
@@ -105,14 +107,14 @@ byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
 
 void reconnect() {
     if (client.connect(ID_CONNECT)) {
+      wdt_reset();
       client.publish("myhome/lighting/connection", "true");
       PubTopic();
       client.subscribe("myhome/lighting/#");
       client.subscribe("myhome/Bathroom/#");
     }
 }
-void setup() {
-  
+void setup() {  
   DDRA = 0xFF;
   DDRC = 0xFF;
   DDRG |= 0b00000111;
@@ -127,8 +129,6 @@ void setup() {
   pinMode(11, OUTPUT);
   digitalWrite(10, HIGH);
   digitalWrite(11, HIGH);
-  analogWrite(PWM_1, 255);/// Выключаем счет в шкафу
-  
   analogWrite(PWM_1, 255);
   analogWrite(PWM_2, 255);
   analogWrite(PWM_3, 255);
@@ -139,7 +139,7 @@ void setup() {
   analogWrite(PWM_8, 255);
   analogWrite(PWM_9, 255);
   
-  Serial.begin(115200);
+  //Serial.begin(115200);
   Serial2.begin(19200);
   mcp.begin();
   delay(10);
@@ -151,10 +151,19 @@ void setup() {
 
   Ethernet.begin(mac, ip);
   delay(10);
+  wdt_enable(WDTO_8S);
 }
 
 void loop() { 
+   wdt_reset();
    client.loop();
+   if (!client.connected()){
+     if (millis() - prevMillis > 5000){
+        prevMillis = millis();
+        reconnect();
+     }
+   }
+   
     if (Serial2.available() > 0) {
       char inChar = (char)Serial2.read(); 
       inputString += inChar;
@@ -164,19 +173,12 @@ void loop() {
         inputString.toCharArray(charVar, 20);
         client.publish("myhome/lighting/UART2", charVar);
         inputString = "";
-        //stringComplete = true;
-      } 
+      }
     }
     ReadButton();
     Bath();
     IRsens();
     Smooth_light();
-    if (!client.connected()){ 
-     if (millis() - prevMillis > 10000){
-        prevMillis = millis();
-        reconnect();
-     }
-   }
 }
 
 char* state(int num){
@@ -227,4 +229,5 @@ void PubTopic (){
     client.publish("myhome/lighting/PWM_7", "0");
     client.publish("myhome/lighting/PWM_8", "0");
     client.publish("myhome/lighting/PWM_9", "0");
-  }
+    client.publish("myhome/lighting/Reset", "false");
+}
