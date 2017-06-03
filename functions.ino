@@ -1,6 +1,10 @@
 void callback_iobroker(String strTopic, String strPayload) {
-  
-  if (strTopic == "myhome/lighting/BedRoom_main") { //Спальня основной
+  if (strTopic == "myhome/lighting/Switch_RGB") {
+      Serial2.print(strPayload);
+      Serial2.print('\r');
+  }
+//////////////////////////
+  else if (strTopic == "myhome/lighting/BedRoom_main") { //Спальня основной
       digitalWrite(out[0], SrtToLvl(strPayload));
       //delay(pause);
       client.publish("myhome/lighting/BedRoom_main", pub(strPayload));
@@ -221,9 +225,12 @@ void callback_iobroker(String strTopic, String strPayload) {
       client.publish("myhome/lighting/RGB_3", RGBToChar(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/Switch_RGB") {
-      Serial2.print(strPayload);
-      Serial2.print('\r');
+  else if (strTopic == "myhome/lighting/Reset") {
+      if(strPayload == "true"){
+        client.publish("myhome/lighting/Reset", "false");
+        wdt_enable(WDTO_15MS);
+        for(;;){}
+      }
   }
 }
 
@@ -357,6 +364,12 @@ void Switch(int i){
 }
 
 void ReadButton (){
+  if (FirstStart){
+    for(int i = 0; i <= 15; i++){
+      btn_old[i] = mcp.digitalRead(bt[i]);
+    }
+    FirstStart = false;
+  }
   for(int i = 0; i <= 15; i++){
     btn[i] = mcp.digitalRead(bt[i]);
     if (btn[i] != btn_old[i]){
