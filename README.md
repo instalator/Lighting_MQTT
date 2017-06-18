@@ -1,8 +1,6 @@
 # Контроллер освещения LC-2560
 Вторая версия контроллера освещения для умного дома.
-[Страница проекта](http://blog.instalator.ru/archives/657)
-
-![Контроллер освещения LC-2560](http://blog.instalator.ru/wp-content/uploads/photo-gallery/lighting/IMG_1548.JPG)
+[Страница проекта](http://blog.instalator.ru/archives/711)
 
 ## Changelog
 
