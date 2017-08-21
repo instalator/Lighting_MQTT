@@ -1,12 +1,10 @@
 #include <SPI.h>           // Ethernet shield
 #include <Ethernet.h>      // Ethernet shield
 #include <PubSubClient.h>  // MQTT 
-//#include <Wire.h>
 #include <Adafruit_MCP23017.h>
 #include <avr/wdt.h>
 //#include <EEPROM.h>
     
-//C:\Users\instalator\AppData\Local\Temp
 #define OUT_0  "myhome/lighting/BedRoom_main"
 #define OUT_1  "myhome/lighting/BedRoom_sec"
 #define OUT_2  "myhome/lighting/GuestRoom_main"
@@ -65,6 +63,9 @@
 #define IN_DW7 49
 #define IN_DW8 43
 
+#define ID_CONNECT "lighting"
+#define PREF "myhome/lighting/"
+
 Adafruit_MCP23017 mcp;
 uint16_t mcp_oldstate = 0;
 byte btn[16];
@@ -84,10 +85,14 @@ int i_cup = 255;
 bool cupboard = false;
 bool All_OFF = false;
 String inputString = "";
+char buf [50];
 
-byte mac[]    = { 0x0C, 0x8E, 0xC2, 0x42, 0x12, 0x44 };
-byte server[] = { 192, 168, 1, 190 }; //IP Брокера
-byte ip[]     = { 192, 168, 1, 67 }; //IP Клиента (Arduino)
+byte out[21] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42};
+byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
+
+byte mac[]    = { 0x0C, 0x8E, 0xC2, 0x42, 0x12, 0x14 };
+byte server[] = {192, 168, 1, 190};
+byte ip[]     = {192, 168, 1, 51};
 
 void callback(char* topic, byte* payload, unsigned int length) {
     payload[length] = '\0';
@@ -97,13 +102,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 EthernetClient ethClient;
+//PubSubClient client(ethClient);
 PubSubClient client(server, 1883, callback, ethClient);
-#define ID_CONNECT "lighting"
-#define PREF "myhome/lighting/"
-
-byte out[21] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42};
-byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
-
 
 void reconnect() {
     if (client.connect(ID_CONNECT)) {
@@ -114,7 +114,26 @@ void reconnect() {
       client.subscribe("myhome/Bathroom/#");
     }
 }
-void setup() {  
+void setup() {
+  MCUSR = 0;
+  wdt_disable();
+/*  if (EEPROM.read(1) != 99) { //Если первый запуск
+    EEPROM.write(1, 99);
+    for (int i = 0 ; i < 4; i++) {
+      EEPROM.write(10 + i, ip[i]);
+    }
+    for (int i = 0 ; i < 4; i++) {
+      EEPROM.write(20 + i, server[i]);
+    }
+  } else {
+    for (int i = 0; i < 4; i++) {
+      ip[i] = EEPROM.read(10 + i);
+    }
+    for (int i = 0; i < 4; i++) {
+      server[i] = EEPROM.read(20 + i);
+    }
+  }
+ */ 
   DDRA = 0xFF;
   DDRC = 0xFF;
   DDRG |= 0b00000111;
@@ -138,23 +157,25 @@ void setup() {
   analogWrite(PWM_7, 255);
   analogWrite(PWM_8, 255);
   analogWrite(PWM_9, 255);
-  
+
   //Serial.begin(115200);
   Serial2.begin(19200);
   mcp.begin();
-  delay(10);
+  delay(100);
   //mcp.setupInterrupts(true, false, LOW);
   for(int i = 0; i <= 15; i++){
     mcp.pinMode(i, INPUT);
     //mcp.setupInterruptPin(i, FALLING);
   }
-
+  
+  //client.setServer(server, 1883);
+  //client.setCallback(callback);
   Ethernet.begin(mac, ip);
-  delay(10);
+  delay(100);
   wdt_enable(WDTO_8S);
 }
 
-void loop() { 
+void loop() {
    wdt_reset();
    client.loop();
    if (!client.connected()){
@@ -182,8 +203,7 @@ void loop() {
 }
 
 char* state(int num){
-  int s = digitalRead(out[num]);
-    if (s > 0){
+    if (digitalRead(out[num]) > 0){
       return "true";
     } else {
       return "false";
@@ -191,6 +211,9 @@ char* state(int num){
 }
 
 void PubTopic (){
+    //char s[16];
+    //sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+    //client.publish("myhome/lighting/ip", s);
     client.publish(OUT_0, state(0));
     client.publish(OUT_1, state(1));
     client.publish(OUT_2, state(2));
