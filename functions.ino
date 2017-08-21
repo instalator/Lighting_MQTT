@@ -1,67 +1,84 @@
+
+bool SrtToLvl(String st){
+    if (st == "false" || st == "0" || st == "off"){
+      return LOW;
+    } else {
+      return HIGH;
+    }
+}
+char* pub(String st){
+    if (st == "false" || st == "0" || st == "off"){
+      return "false";
+    } else{
+      return "true";
+    }
+}
+
+
 void callback_iobroker(String strTopic, String strPayload) {
   if (strTopic == "myhome/lighting/Switch_RGB") {
       Serial2.print(strPayload);
       Serial2.print('\r');
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/BedRoom_main") { //Спальня основной
+  else if (strTopic == OUT_0) { //Спальня основной
       digitalWrite(out[0], SrtToLvl(strPayload));
-      //delay(pause);
-      client.publish("myhome/lighting/BedRoom_main", pub(strPayload));
+      //delay(1000);
+      client.publish(OUT_0, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/BedRoom_sec") { //Спальня доп
+  else if (strTopic == OUT_1) { //Спальня доп
       digitalWrite(out[1], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/BedRoom_sec", pub(strPayload));
+      client.publish(OUT_1, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/GuestRoom_main") { //Зал основной
+  else if (strTopic == OUT_2) { //Зал основной
       digitalWrite(out[2], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/GuestRoom_main", pub(strPayload));
+      client.publish(OUT_2, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/GuestRoom_main2") {//Зал основной 2
+  else if (strTopic == OUT_3) {//Зал основной 2
       digitalWrite(out[3], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/GuestRoom_main2", pub(strPayload));
+      client.publish(OUT_3, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/GuestRoom_sec") { //Зал доп
+  else if (strTopic == OUT_4) { //Зал доп
       digitalWrite(out[4], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/GuestRoom_sec", pub(strPayload));
+      client.publish(OUT_4, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/Kitchen_main") { //Кухня основной
+  else if (strTopic == OUT_5) { //Кухня основной
       digitalWrite(out[5], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/Kitchen_main", pub(strPayload));
+      client.publish(OUT_5, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/Kitchen_sec") { //Кухня доп
+  else if (strTopic == OUT_6) { //Кухня доп
       digitalWrite(out[6], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/Kitchen_sec", pub(strPayload));
+      client.publish(OUT_6, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/BathRoom_main") { //Ванна основной
+  else if (strTopic == OUT_7) { //Ванна основной
       digitalWrite(out[7], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/BathRoom_main", pub(strPayload));
+      client.publish(OUT_7, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/BathRoom_sec") { //Ванна доп
+  else if (strTopic == OUT_8) { //Ванна доп
       digitalWrite(out[8], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/BathRoom_sec", pub(strPayload));
+      client.publish(OUT_8, pub(strPayload));
   }
 //////////////////////////
-  else if (strTopic == "myhome/lighting/Hall_main") { //Коридор
+  else if (strTopic == OUT_9) { //Коридор
       digitalWrite(out[9], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/lighting/Hall_main", pub(strPayload));
+      client.publish(OUT_9, pub(strPayload));
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting/Cupboard") {
@@ -79,10 +96,10 @@ void callback_iobroker(String strTopic, String strPayload) {
     }
   }
 /////////////////////
-  else if (strTopic == "myhome/Bathroom/Ventilator") {
+  else if (strTopic == OUT_20) {
       digitalWrite(out[20], SrtToLvl(strPayload));
       //delay(pause);
-      client.publish("myhome/Bathroom/Ventilator", pub(strPayload));
+      client.publish(OUT_20, pub(strPayload));
    }
 ///////////////////
   else if (strTopic == "myhome/lighting/All_OFF") {
@@ -256,7 +273,7 @@ void IRsens(){
 }
 
 void Smooth_light(){
-    if (millis() - prevMillis3 >= 20 && flag_cupboard == true) {
+    if (millis() - prevMillis3 >= 20 && flag_cupboard == true && cupboard == false) {
       prevMillis3 = millis();
       if (cupboard == false){
          analogWrite(PWM_1, i_cup);
@@ -426,26 +443,11 @@ int PWM(String p){
     return pwm;
 }
 
-char* pub(String st){
-    if (st == "false" || st == "0" || st == "off"){
-      return "false";
-    } else{
-      return "true";
-    }
-}
-
 char* BoolToChar (bool r) {
     if (r == true){
       return "true";
     } else{
       return "false";
-    }
-}
-bool SrtToLvl(String st){
-    if (st == "false" || st == "0" || st == "off"){
-      return LOW;
-    } else{
-      return HIGH;
     }
 }
 
@@ -455,7 +457,16 @@ char* RGBToChar (String str){
     str.toCharArray(a, len+1);
     return a;
 }
- 
+
+char* IntToChar (unsigned long v) {
+  sprintf(buf, "%lu", v);
+  return buf;
+}
+char* IntToCh (unsigned long b) {
+  sprintf(buf, "%lu", b);
+  return buf;
+}
+/*
 char* IntToCh (int intV) {
   String str = String(intV, DEC);
   int len = str.length() + 1;
@@ -472,8 +483,4 @@ char* IntToChar (int intV) {
   return b;
 }
 
-
-  
-
-
-
+*/
