@@ -1,12 +1,12 @@
 
 bool SrtToLvl(String st){
     if (st == "false" || st == "0" || st == "off"){
-      return LOW;
+      return 0;
     } else {
-      return HIGH;
+      return 1;
     }
 }
-char* pub(String st){
+const char* pub(String st){
     if (st == "false" || st == "0" || st == "off"){
       return "false";
     } else{
@@ -104,7 +104,7 @@ void callback_iobroker(String strTopic, String strPayload) {
 ///////////////////
   else if (strTopic == "myhome/lighting/All_OFF") {
     if (strPayload == "true") {
-      for (int i = 0 ; i < 21; i++) {
+      for (int i = 0 ; i <= 20; i++) {
         if (out[i] != 20){ //myhome/Bathroom/Ventilator
            digitalWrite (out[i], LOW);
         }
@@ -213,7 +213,10 @@ void callback_iobroker(String strTopic, String strPayload) {
       client.publish("myhome/lighting/PWM_1", IntToChar(R));
       client.publish("myhome/lighting/PWM_2", IntToChar(G));
       client.publish("myhome/lighting/PWM_3", IntToChar(B));
-      client.publish("myhome/lighting/RGB_1", RGBToChar(strPayload));
+      int len = strPayload.length()+1;
+      char a[len+25];
+      strPayload.toCharArray(a, len+1);
+      client.publish("myhome/lighting/RGB_1", a);
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting/RGB_2") {
@@ -226,7 +229,10 @@ void callback_iobroker(String strTopic, String strPayload) {
       client.publish("myhome/lighting/PWM_4", IntToChar(R));
       client.publish("myhome/lighting/PWM_5", IntToChar(G));
       client.publish("myhome/lighting/PWM_6", IntToChar(B));
-      client.publish("myhome/lighting/RGB_2", RGBToChar(strPayload));
+      int len = strPayload.length()+1;
+      char a[len+25];
+      strPayload.toCharArray(a, len+1);
+      client.publish("myhome/lighting/RGB_2", a);
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting/RGB_3") {
@@ -239,7 +245,10 @@ void callback_iobroker(String strTopic, String strPayload) {
       client.publish("myhome/lighting/PWM_7", IntToChar(R));
       client.publish("myhome/lighting/PWM_8", IntToChar(G));
       client.publish("myhome/lighting/PWM_9", IntToChar(B));
-      client.publish("myhome/lighting/RGB_3", RGBToChar(strPayload));
+      int len = strPayload.length()+1;
+      char a[len+25];
+      strPayload.toCharArray(a, len+1);
+      client.publish("myhome/lighting/RGB_3", a);
   }
 //////////////////////////
   else if (strTopic == "myhome/lighting/Reset") {
@@ -252,12 +261,12 @@ void callback_iobroker(String strTopic, String strPayload) {
 }
 
 void IRsens(){
-  left = analogRead(IR_1);
-  right = analogRead(IR_2);
+  int left = analogRead(IR_1);
+  int right = analogRead(IR_2);
   if (millis() - prevMillis4 > 5000){
     prevMillis4 = millis();
-    client.publish("myhome/lighting/left_IR", IntToCh(left));
-    client.publish("myhome/lighting/right_IR", IntToCh(right));
+    client.publish("myhome/lighting/left_IR", IntToChar(left));
+    client.publish("myhome/lighting/right_IR", IntToChar(right));
   }
   if ((left < 320 || right < 300) && left > 10 && right > 10 && flag_cupboard == false && cupboard == false){
     flag_cupboard = true;
@@ -443,7 +452,7 @@ int PWM(String p){
     return pwm;
 }
 
-char* BoolToChar (bool r) {
+const char* BoolToChar (bool r) {
     if (r == true){
       return "true";
     } else{
@@ -451,36 +460,15 @@ char* BoolToChar (bool r) {
     }
 }
 
-char* RGBToChar (String str){
+/*const char* RGBToChar (String str){
     int len = str.length()+1;
     char a[len+25];
     str.toCharArray(a, len+1);
     return a;
 }
-
-char* IntToChar (unsigned long v) {
+*/
+const char* IntToChar (unsigned long v) {
+  static char buf [100];
   sprintf(buf, "%lu", v);
   return buf;
 }
-char* IntToCh (unsigned long b) {
-  sprintf(buf, "%lu", b);
-  return buf;
-}
-/*
-char* IntToCh (int intV) {
-  String str = String(intV, DEC);
-  int len = str.length() + 1;
-  char b[len+2];
-  str.toCharArray(b, len);
-  return b;
-}
-
-char* IntToChar (int intV) {
-  String stringVar = String(intV, DEC);
-  int len = stringVar.length() + 1;
-  char b[len+1];
-  stringVar.toCharArray(b, len);
-  return b;
-}
-
-*/
