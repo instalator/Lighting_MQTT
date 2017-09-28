@@ -1,3 +1,4 @@
+
 #include <SPI.h>           // Ethernet shield
 #include <Ethernet.h>      // Ethernet shield
 #include <PubSubClient.h>  // MQTT 
@@ -76,6 +77,7 @@ unsigned long prevMillis = 0; //для reconnect
 unsigned long prevMillis2 = 0; // для ванной
 unsigned long prevMillis3 = 0; //для подсветки шкафа
 unsigned long prevMillis4 = 0; // для теста подсветки шкафа
+int count = 0;
 byte  bathswitch = false; 
 byte  posetitel = false;
 bool flag_cupboard = true;
@@ -83,12 +85,14 @@ byte  i_cup = 255;
 bool cupboard = false;
 bool All_OFF = false;
 String inputString = "";
+static char buf [100];
+int pwm;
 
 
 const byte out[21] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42};
 const byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
 
-byte mac[]    = { 0x0C, 0x8E, 0xC2, 0x42, 0x12, 0x14 };
+byte mac[]    = { 0x0C, 0x8E, 0xC5, 0x42, 0x42, 0x19 };
 IPAddress server(192, 168, 1, 190);
 IPAddress ip(192, 168, 1, 51);
 
@@ -104,39 +108,29 @@ EthernetClient ethClient;
 PubSubClient client(server, 1883, callback, ethClient);
 
 void reconnect() {
+    count++;
     if (client.connect(ID_CONNECT)) {
+      count = 0;
       wdt_reset();
       client.publish("myhome/lighting/connection", "true");
       PubTopic();
       client.subscribe("myhome/lighting/#");
       client.subscribe("myhome/Bathroom/#");
     }
+    if (count > 100){
+      wdt_enable(WDTO_15MS);
+        for(;;){}
+    }
 }
 void setup() {
   MCUSR = 0;
   wdt_disable();
-/*  if (EEPROM.read(1) != 99) { //Если первый запуск
-    EEPROM.write(1, 99);
-    for (int i = 0 ; i < 4; i++) {
-      EEPROM.write(10 + i, ip[i]);
-    }
-    for (int i = 0 ; i < 4; i++) {
-      EEPROM.write(20 + i, server[i]);
-    }
-  } else {
-    for (int i = 0; i < 4; i++) {
-      ip[i] = EEPROM.read(10 + i);
-    }
-    for (int i = 0; i < 4; i++) {
-      server[i] = EEPROM.read(20 + i);
-    }
-  }
- */ 
   DDRA = 0xFF;
   DDRC = 0xFF;
   DDRG |= 0b00000111;
   DDRL |= 0b10000000;
-  DDRD |= 0b00001100;
+  DDRD |= 0b10000000;
+  DDRB |= 0b00110000;
   
   pinMode(IN_UP7, INPUT);
   pinMode(IN_UP8, INPUT);
@@ -144,8 +138,6 @@ void setup() {
   pinMode(IR_2, INPUT);
   pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
-  digitalWrite(10, HIGH);
-  digitalWrite(11, HIGH);
   analogWrite(PWM_1, 255);
   analogWrite(PWM_2, 255);
   analogWrite(PWM_3, 255);
@@ -156,7 +148,7 @@ void setup() {
   analogWrite(PWM_8, 255);
   analogWrite(PWM_9, 255);
 
-  //Serial.begin(115200);
+  Serial.begin(115200);
   Serial2.begin(19200);
   inputString.reserve(50);
   mcp.begin();
@@ -182,8 +174,7 @@ void loop() {
         prevMillis = millis();
         reconnect();
      }
-   }
-   
+   }   
     if (Serial2.available() > 0) {
       char inChar = (char)Serial2.read(); 
       inputString += inChar;
@@ -210,9 +201,9 @@ const char* state(int num){
 }
 
 void PubTopic (){
-    //char s[16];
-    //sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-    //client.publish("myhome/lighting/ip", s);
+    char s[16];
+    sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+    client.publish("myhome/lighting/ip", s);
     client.publish(OUT_0, state(0));
     client.publish(OUT_1, state(1));
     client.publish(OUT_2, state(2));
