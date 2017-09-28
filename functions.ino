@@ -442,7 +442,7 @@ bool InvertOut(int n){
 }
 
 int PWM(String p){
-  int pwm = p.toInt();
+    pwm = p.toInt();
     if (pwm > 254){
       pwm = 255;
     } else if (pwm < 1){
@@ -453,22 +453,10 @@ int PWM(String p){
 }
 
 const char* BoolToChar (bool r) {
-    if (r == true){
-      return "true";
-    } else{
-      return "false";
-    }
+    return r ? "true" : "false";
 }
 
-/*const char* RGBToChar (String str){
-    int len = str.length()+1;
-    char a[len+25];
-    str.toCharArray(a, len+1);
-    return a;
-}
-*/
-const char* IntToChar (unsigned long v) {
-  static char buf [100];
-  sprintf(buf, "%lu", v);
+const char* IntToChar (unsigned int v) {
+  sprintf(buf, "%d", v);
   return buf;
 }
