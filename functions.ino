@@ -105,7 +105,7 @@ void callback_iobroker(String strTopic, String strPayload) {
   else if (strTopic == "myhome/lighting/All_OFF") {
     if (strPayload == "true") {
       for (int i = 0 ; i <= 20; i++) {
-        if (out[i] != 20){ //myhome/Bathroom/Ventilator
+        if (i != 20){ //myhome/Bathroom/Ventilator
            digitalWrite (out[i], LOW);
         }
       }
