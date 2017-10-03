@@ -1,4 +1,3 @@
-
 #include <SPI.h>           // Ethernet shield
 #include <Ethernet.h>      // Ethernet shield
 #include <PubSubClient.h>  // MQTT 
