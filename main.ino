@@ -87,11 +87,10 @@ String inputString = "";
 static char buf [100];
 int pwm;
 
-
 const byte out[21] = {29, 30, 31, 32, 33, 34, 35, 22, 23, 24, 25, 26, 27, 28, 36, 37, 38, 39, 40, 41, 42};
 const byte bt[16] = {15, 14, 13, 12, 11, 10, 9, 8, 0, 1, 2, 3, 4, 5, 6, 7};
 
-byte mac[]    = { 0x0C, 0x8E, 0xC5, 0x42, 0x42, 0x19 };
+byte mac[]    = { 0x0C, 0x8E, 0xCE, 0x41, 0xEE, 0x11 };
 IPAddress server(192, 168, 1, 190);
 IPAddress ip(192, 168, 1, 51);
 
@@ -108,6 +107,7 @@ PubSubClient client(server, 1883, callback, ethClient);
 
 void reconnect() {
     count++;
+    wdt_reset();
     if (client.connect(ID_CONNECT)) {
       count = 0;
       wdt_reset();
@@ -116,7 +116,13 @@ void reconnect() {
       client.subscribe("myhome/lighting/#");
       client.subscribe("myhome/Bathroom/#");
     }
-    if (count > 100){
+    for(int i = 0; i <= 15; i++){
+      btn[i] = mcp.digitalRead(bt[i]);
+      if (btn[i] == 1){
+        count = 0;
+      }
+    }
+    if (count > 50){
       wdt_enable(WDTO_15MS);
         for(;;){}
     }
@@ -163,13 +169,15 @@ void setup() {
   Ethernet.begin(mac, ip);
   delay(100);
   wdt_enable(WDTO_8S);
+  Serial.print("START");
 }
 
 void loop() {
+  
    wdt_reset();
    client.loop();
    if (!client.connected()){
-     if (millis() - prevMillis > 5000){
+     if (millis() - prevMillis > 10000){
         prevMillis = millis();
         reconnect();
      }
@@ -189,6 +197,7 @@ void loop() {
     Bath();
     IRsens();
     Smooth_light();
+    Bath();
 }
 
 const char* state(int num){
